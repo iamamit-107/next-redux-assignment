@@ -1,65 +1,46 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Head from "next/head";
+import Link from "next/link";
+import { useDispatch } from "react-redux";
+import { BUTTONS, PAGE_TITLE } from "../constant";
+import Button from "./components/generic/Button";
+import PostList from "./components/PostList";
+import { setAllPosts } from "./redux/feature/postSlice";
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+export default function Home({ posts }) {
+	const dispatch = useDispatch();
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+	dispatch(setAllPosts(posts));
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+	const renderPostList = () => {
+		return posts.map((post) => <PostList key={post.id} post={post} />);
+	};
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+	const renderCreateButton = () => {
+		return (
+			<Link href="/posts/create">
+				<a className="bg-indigo-500 hover:bg-indigo-600 text-white text-medium font-medium rounded-md mx-1 py-2 px-3 mb-3">
+					{BUTTONS.CREATE}
+				</a>
+			</Link>
+		);
+	};
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+	return (
+		<div>
+			<Head>
+				<title>{PAGE_TITLE.ALL_POST}</title>
+			</Head>
+			{renderCreateButton()}
+			{renderPostList()}
+		</div>
+	);
+}
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+export async function getStaticProps(context) {
+	const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts`);
+	const posts = await result.json();
 
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+	return {
+		props: { posts },
+	};
 }
